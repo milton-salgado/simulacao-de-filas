@@ -9,7 +9,7 @@ class Servico:
         tempo_saida (float): Tempo em que o serviço saiu do sistema (se aplicável).
     """
 
-    def __init__(self, id, tempo_chegada):
+    def __init__(self, id: int, tempo_chegada: float):
         """
         Inicializa um serviço com identificador e tempo de chegada.
 
@@ -35,18 +35,19 @@ class Servidor:
         servico_atual (Servico): Serviço que está sendo processado atualmente (se aplicável).
     """
 
-    def __init__(self, nome, funcao_tempo_servico):
+    def __init__(self, nome: str, funcao_tempo_servico: callable):
         """
         Inicializa um servidor com nome e função de tempo de serviço.
 
         Args:
             nome (str): Nome do servidor.
             funcao_tempo_servico (callable): Função que gera o tempo de serviço para o servidor.
+            servico_atual: Recebe id serviço atual
         """
         self.nome = nome
         self.fila = []
         self.ocupado_ate = 0
-        self.funcao_tempo_servico = funcao_tempo_servico
+        self.funcao_tempo_servico = funcao_tempo_servico  # Função tempo de serviço?
         self.servico_atual = None
 
 
@@ -61,7 +62,7 @@ class Evento:
         servidor (Servidor): Servidor associado ao evento (se aplicável).
     """
 
-    def __init__(self, tempo, tipo, servico=None, servidor=None):
+    def __init__(self, tempo: float, tipo: str, servico: Servico = None, servidor: Servidor = None):
         """
         Inicializa um evento com tempo, tipo e entidades relacionadas.
 

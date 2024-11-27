@@ -19,7 +19,7 @@ class Simulacao:
         total_servicos_para_coleta (int): Total de serviços a coletar.
     """
 
-    def __init__(self, funcoes_tempo_servico):
+    def __init__(self, funcoes_tempo_servico: callable):
         """
         Inicializa a simulação com funções de tempo de serviço para os servidores.
 
@@ -66,7 +66,7 @@ class Simulacao:
         print(f'Tempo médio no sistema: {tempo_medio_no_sistema}')
         print(f'Desvio padrão do tempo no sistema: {desvio_padrao_no_sistema}')
 
-    def agendar_evento(self, evento):
+    def agendar_evento(self, evento: Evento):
         """
         Agenda um evento adicionando-o à fila de eventos.
 
@@ -75,7 +75,7 @@ class Simulacao:
         """
         heapq.heappush(self.fila_eventos, evento)
 
-    def processar_chegada(self, evento):
+    def processar_chegada(self, evento: Evento):
         """
         Processa um evento de chegada, encaminhando o serviço para o servidor apropriado.
 
@@ -107,7 +107,7 @@ class Simulacao:
         else:
             servidor.fila.append(servico)
 
-    def processar_saida(self, evento):
+    def processar_saida(self, evento: Evento):
         """
         Processa um evento de saída, movendo o serviço para o próximo estágio ou finalizando-o.
 
