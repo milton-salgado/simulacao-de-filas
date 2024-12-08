@@ -19,7 +19,6 @@ class Servico:
         """
         self.id = id
         self.tempo_chegada = tempo_chegada
-        self.tempos_servico = {}
         self.tempo_saida = None
 
 
@@ -47,7 +46,7 @@ class Servidor:
         self.nome = nome
         self.fila = []
         self.ocupado_ate = 0
-        self.funcao_tempo_servico = funcao_tempo_servico  # Função tempo de serviço?
+        self.funcao_tempo_servico = funcao_tempo_servico
         self.servico_atual = None
 
 
