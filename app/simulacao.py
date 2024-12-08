@@ -100,7 +100,6 @@ class Simulacao:
             tempo_servico = servidor.funcao_tempo_servico()
             servidor.ocupado_ate = self.tempo_atual + tempo_servico
             servidor.servico_atual = servico
-            servico.tempos_servico[servidor.nome] = tempo_servico
 
             self.agendar_evento(
                 Evento(servidor.ocupado_ate, 'saida', servico, servidor))
@@ -122,7 +121,6 @@ class Simulacao:
             tempo_servico = servidor.funcao_tempo_servico()
             servidor.ocupado_ate = self.tempo_atual + tempo_servico
             servidor.servico_atual = proximo_servico
-            proximo_servico.tempos_servico[servidor.nome] = tempo_servico
 
             self.agendar_evento(
                 Evento(servidor.ocupado_ate, 'saida', proximo_servico, servidor))
