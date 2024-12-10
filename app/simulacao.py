@@ -1,7 +1,7 @@
 import heapq
 import random
 from modelos import Servico, Servidor, Evento
-
+import matplotlib.pyplot as plt  # Adicionado para geração de gráficos
 
 class Simulacao:
     """
@@ -36,6 +36,12 @@ class Simulacao:
         self.servicos_aquecimento = 10000
         self.total_servicos_para_coleta = 10000
 
+        # Listas para armazenamento dos valores de tempo médio e desvio padrão ao longo do tempo
+        self.tempos_medios_ao_longo = []
+        self.desvios_ao_longo = []
+        self.passos_coleta = []
+        self.step_coleta = 1000  # De quantos em quantos serviços iremos coletar estatísticas
+
         self.servidores['S1'] = Servidor('S1', funcoes_tempo_servico['S1'])
         self.servidores['S2'] = Servidor('S2', funcoes_tempo_servico['S2'])
         self.servidores['S3'] = Servidor('S3', funcoes_tempo_servico['S3'])
@@ -65,6 +71,20 @@ class Simulacao:
         desvio_padrao_no_sistema = variancia ** 0.5
         print(f'Tempo médio no sistema: {tempo_medio_no_sistema}')
         print(f'Desvio padrão do tempo no sistema: {desvio_padrao_no_sistema}')
+
+        # Geração dos gráficos de tempo médio no sistema e desvio padrão ao longo do tempo
+        if self.passos_coleta:
+            plt.figure(figsize=(10,5))
+            plt.subplot(1,2,1)
+            plt.plot(self.passos_coleta, self.tempos_medios_ao_longo)
+            plt.title('Tempo médio no sistema ao longo da simulação')
+
+            plt.subplot(1,2,2)
+            plt.plot(self.passos_coleta, self.desvios_ao_longo)
+            plt.title('Desvio padrão do tempo no sistema ao longo da simulação')
+
+            plt.tight_layout()
+            plt.show()
 
     def agendar_evento(self, evento: Evento):
         """
@@ -146,6 +166,15 @@ class Simulacao:
                     tempo_no_sistema = servico.tempo_saida - servico.tempo_chegada
                     self.tempos_no_sistema.append(tempo_no_sistema)
 
+                    # Coleta de estatísticas periodicamente
+                    if self.servicos_coletados % self.step_coleta == 0:
+                        media = sum(self.tempos_no_sistema) / len(self.tempos_no_sistema)
+                        var = sum((x - media)**2 for x in self.tempos_no_sistema) / len(self.tempos_no_sistema)
+                        dp = var**0.5
+                        self.tempos_medios_ao_longo.append(media)
+                        self.desvios_ao_longo.append(dp)
+                        self.passos_coleta.append(self.servicos_coletados)
+
         elif servidor.nome == 'S3':
             servico.tempo_saida = self.tempo_atual
             self.servicos_completados += 1
@@ -153,3 +182,13 @@ class Simulacao:
                 self.servicos_coletados += 1
                 tempo_no_sistema = servico.tempo_saida - servico.tempo_chegada
                 self.tempos_no_sistema.append(tempo_no_sistema)
+
+                # Coleta de estatísticas periodicamente
+                if self.servicos_coletados % self.step_coleta == 0:
+                    media = sum(self.tempos_no_sistema) / len(self.tempos_no_sistema)
+                    var = sum((x - media)**2 for x in self.tempos_no_sistema) / len(self.tempos_no_sistema)
+                    dp = var**0.5
+                    self.tempos_medios_ao_longo.append(media)
+                    self.desvios_ao_longo.append(dp)
+                    self.passos_coleta.append(self.servicos_coletados)
+
