@@ -33,7 +33,7 @@ Este projeto implementa uma simulação de um sistema de servidores processando 
 
 <div align="center">
   <img src="./assets/preview/project_preview.webp" alt="Prévia do Projeto" width="500">
-</div>s
+</div>
 
 ## ⚙️ Construção
 
