@@ -3,6 +3,7 @@ import random
 from modelos import Servico, Servidor, Evento
 import matplotlib.pyplot as plt  # Adicionado para geração de gráficos
 
+
 class Simulacao:
     """
     Representa a simulação de um sistema de servidores processando serviços.
@@ -33,8 +34,8 @@ class Simulacao:
         self.servicos_completados = 0
         self.servicos_coletados = 0
         self.tempos_no_sistema = []
-        self.servicos_aquecimento = 10000
-        self.total_servicos_para_coleta = 10000
+        self.servicos_aquecimento = 1000000
+        self.total_servicos_para_coleta = 1000000
 
         # Listas para armazenamento dos valores de tempo médio e desvio padrão ao longo do tempo
         self.tempos_medios_ao_longo = []
@@ -74,12 +75,12 @@ class Simulacao:
 
         # Geração dos gráficos de tempo médio no sistema e desvio padrão ao longo do tempo
         if self.passos_coleta:
-            plt.figure(figsize=(10,5))
-            plt.subplot(1,2,1)
+            plt.figure(figsize=(10, 5))
+            plt.subplot(1, 2, 1)
             plt.plot(self.passos_coleta, self.tempos_medios_ao_longo)
             plt.title('Tempo médio no sistema ao longo da simulação')
 
-            plt.subplot(1,2,2)
+            plt.subplot(1, 2, 2)
             plt.plot(self.passos_coleta, self.desvios_ao_longo)
             plt.title('Desvio padrão do tempo no sistema ao longo da simulação')
 
@@ -168,8 +169,10 @@ class Simulacao:
 
                     # Coleta de estatísticas periodicamente
                     if self.servicos_coletados % self.step_coleta == 0:
-                        media = sum(self.tempos_no_sistema) / len(self.tempos_no_sistema)
-                        var = sum((x - media)**2 for x in self.tempos_no_sistema) / len(self.tempos_no_sistema)
+                        media = sum(self.tempos_no_sistema) / \
+                            len(self.tempos_no_sistema)
+                        var = sum(
+                            (x - media)**2 for x in self.tempos_no_sistema) / len(self.tempos_no_sistema)
                         dp = var**0.5
                         self.tempos_medios_ao_longo.append(media)
                         self.desvios_ao_longo.append(dp)
@@ -185,10 +188,11 @@ class Simulacao:
 
                 # Coleta de estatísticas periodicamente
                 if self.servicos_coletados % self.step_coleta == 0:
-                    media = sum(self.tempos_no_sistema) / len(self.tempos_no_sistema)
-                    var = sum((x - media)**2 for x in self.tempos_no_sistema) / len(self.tempos_no_sistema)
+                    media = sum(self.tempos_no_sistema) / \
+                        len(self.tempos_no_sistema)
+                    var = sum(
+                        (x - media)**2 for x in self.tempos_no_sistema) / len(self.tempos_no_sistema)
                     dp = var**0.5
                     self.tempos_medios_ao_longo.append(media)
                     self.desvios_ao_longo.append(dp)
                     self.passos_coleta.append(self.servicos_coletados)
-
