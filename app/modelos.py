@@ -1,3 +1,5 @@
+# modelos.py
+
 class Servico:
     """
     Representa um serviço a ser processado pelos servidores.
@@ -5,7 +7,6 @@ class Servico:
     Atributos:
         id (int): Identificador único do serviço.
         tempo_chegada (float): Tempo em que o serviço chegou ao sistema.
-        tempos_servico (dict): Dicionário com tempos de serviço por servidor.
         tempo_saida (float): Tempo em que o serviço saiu do sistema (se aplicável).
     """
 
@@ -32,6 +33,7 @@ class Servidor:
         ocupado_ate (float): Tempo até o qual o servidor está ocupado.
         funcao_tempo_servico (callable): Função que determina o tempo de serviço para o servidor.
         servico_atual (Servico): Serviço que está sendo processado atualmente (se aplicável).
+        tempo_ocupado (float): Tempo total que o servidor esteve ocupado.
     """
 
     def __init__(self, nome: str, funcao_tempo_servico: callable):
@@ -41,13 +43,13 @@ class Servidor:
         Args:
             nome (str): Nome do servidor.
             funcao_tempo_servico (callable): Função que gera o tempo de serviço para o servidor.
-            servico_atual: Recebe id serviço atual
         """
         self.nome = nome
         self.fila = []
         self.ocupado_ate = 0
         self.funcao_tempo_servico = funcao_tempo_servico
         self.servico_atual = None
+        self.tempo_ocupado = 0  # Inicializa o tempo ocupado
 
 
 class Evento:

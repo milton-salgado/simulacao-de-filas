@@ -1,7 +1,9 @@
+# simulacao.py
+
 import heapq
 import random
 from modelos import Servico, Servidor, Evento
-import matplotlib.pyplot as plt  # Adicionado para geração de gráficos
+import matplotlib.pyplot as plt
 
 
 class Simulacao:
@@ -18,9 +20,10 @@ class Simulacao:
         tempos_no_sistema (list): Tempos que os serviços passaram no sistema.
         servicos_aquecimento (int): Quantidade de serviços a ignorar no início.
         total_servicos_para_coleta (int): Total de serviços a coletar.
+        duracoes_jobs (list): Lista das durações dos jobs no sistema.
     """
 
-    def __init__(self, funcoes_tempo_servico: callable):
+    def __init__(self, funcoes_tempo_servico: dict):
         """
         Inicializa a simulação com funções de tempo de serviço para os servidores.
 
@@ -37,15 +40,10 @@ class Simulacao:
         self.servicos_aquecimento = 1000000
         self.total_servicos_para_coleta = 1000000
 
-        # Listas para armazenamento dos valores de tempo médio e desvio padrão ao longo do tempo
-        self.tempos_medios_ao_longo = []
-        self.desvios_ao_longo = []
-        self.passos_coleta = []
-        self.step_coleta = 1000  # De quantos em quantos serviços iremos coletar estatísticas
+        self.duracoes_jobs = []
 
-        self.servidores['S1'] = Servidor('S1', funcoes_tempo_servico['S1'])
-        self.servidores['S2'] = Servidor('S2', funcoes_tempo_servico['S2'])
-        self.servidores['S3'] = Servidor('S3', funcoes_tempo_servico['S3'])
+        for nome, funcao in funcoes_tempo_servico.items():
+            self.servidores[nome] = Servidor(nome, funcao)
 
     def executar(self):
         """
@@ -65,27 +63,7 @@ class Simulacao:
             elif evento.tipo == 'saida':
                 self.processar_saida(evento)
 
-        tempo_medio_no_sistema = sum(
-            self.tempos_no_sistema) / len(self.tempos_no_sistema)
-        variancia = sum((x - tempo_medio_no_sistema) **
-                        2 for x in self.tempos_no_sistema) / len(self.tempos_no_sistema)
-        desvio_padrao_no_sistema = variancia ** 0.5
-        print(f'Tempo médio no sistema: {tempo_medio_no_sistema}')
-        print(f'Desvio padrão do tempo no sistema: {desvio_padrao_no_sistema}')
-
-        # Geração dos gráficos de tempo médio no sistema e desvio padrão ao longo do tempo
-        if self.passos_coleta:
-            plt.figure(figsize=(10, 5))
-            plt.subplot(1, 2, 1)
-            plt.plot(self.passos_coleta, self.tempos_medios_ao_longo)
-            plt.title('Tempo médio no sistema ao longo da simulação')
-
-            plt.subplot(1, 2, 2)
-            plt.plot(self.passos_coleta, self.desvios_ao_longo)
-            plt.title('Desvio padrão do tempo no sistema ao longo da simulação')
-
-            plt.tight_layout()
-            plt.show()
+        self.gerar_graficos()
 
     def agendar_evento(self, evento: Evento):
         """
@@ -119,6 +97,7 @@ class Simulacao:
 
         if servidor.ocupado_ate <= self.tempo_atual:
             tempo_servico = servidor.funcao_tempo_servico()
+            servidor.tempo_ocupado += tempo_servico
             servidor.ocupado_ate = self.tempo_atual + tempo_servico
             servidor.servico_atual = servico
 
@@ -140,6 +119,7 @@ class Simulacao:
         if servidor.fila:
             proximo_servico = servidor.fila.pop(0)
             tempo_servico = servidor.funcao_tempo_servico()
+            servidor.tempo_ocupado += tempo_servico
             servidor.ocupado_ate = self.tempo_atual + tempo_servico
             servidor.servico_atual = proximo_servico
 
@@ -155,30 +135,7 @@ class Simulacao:
             self.agendar_evento(
                 Evento(self.tempo_atual, 'chegada', servico, proximo_servidor))
 
-        elif servidor.nome == 'S2':
-            if random.random() < 0.2:
-                self.agendar_evento(
-                    Evento(self.tempo_atual, 'chegada', servico, servidor))
-            else:
-                servico.tempo_saida = self.tempo_atual
-                self.servicos_completados += 1
-                if servico.id > self.servicos_aquecimento:
-                    self.servicos_coletados += 1
-                    tempo_no_sistema = servico.tempo_saida - servico.tempo_chegada
-                    self.tempos_no_sistema.append(tempo_no_sistema)
-
-                    # Coleta de estatísticas periodicamente
-                    if self.servicos_coletados % self.step_coleta == 0:
-                        media = sum(self.tempos_no_sistema) / \
-                            len(self.tempos_no_sistema)
-                        var = sum(
-                            (x - media)**2 for x in self.tempos_no_sistema) / len(self.tempos_no_sistema)
-                        dp = var**0.5
-                        self.tempos_medios_ao_longo.append(media)
-                        self.desvios_ao_longo.append(dp)
-                        self.passos_coleta.append(self.servicos_coletados)
-
-        elif servidor.nome == 'S3':
+        elif servidor.nome in ['S2', 'S3']:
             servico.tempo_saida = self.tempo_atual
             self.servicos_completados += 1
             if servico.id > self.servicos_aquecimento:
@@ -186,13 +143,36 @@ class Simulacao:
                 tempo_no_sistema = servico.tempo_saida - servico.tempo_chegada
                 self.tempos_no_sistema.append(tempo_no_sistema)
 
-                # Coleta de estatísticas periodicamente
-                if self.servicos_coletados % self.step_coleta == 0:
-                    media = sum(self.tempos_no_sistema) / \
-                        len(self.tempos_no_sistema)
-                    var = sum(
-                        (x - media)**2 for x in self.tempos_no_sistema) / len(self.tempos_no_sistema)
-                    dp = var**0.5
-                    self.tempos_medios_ao_longo.append(media)
-                    self.desvios_ao_longo.append(dp)
-                    self.passos_coleta.append(self.servicos_coletados)
+                self.duracoes_jobs.append(tempo_no_sistema)
+
+    def gerar_graficos(self):
+        """
+        Gera os gráficos de duração dos jobs e utilização dos servidores.
+        """
+        plt.figure(figsize=(14, 10))
+
+        # 1. Duração dos Jobs no Sistema
+        plt.subplot(2, 1, 1)
+        plt.hist(self.duracoes_jobs, bins=30, color='skyblue', edgecolor='black')
+        plt.title('Duração dos Jobs no Sistema')
+        plt.xlabel('Duração (s)')
+        plt.ylabel('Frequência')
+        plt.grid(True)
+
+        # 2. Utilização Média dos Servidores
+        plt.subplot(2, 1, 2)
+        utilizacoes = {nome: (servidor.tempo_ocupado / self.tempo_atual) * 100
+                      for nome, servidor in self.servidores.items()}
+        cores_barras = ['blue', 'green', 'red', 'orange', 'purple']  # Consistência com as filas
+        plt.bar(utilizacoes.keys(), utilizacoes.values(),
+                color=cores_barras[:len(utilizacoes)], edgecolor='black')
+        plt.title('Utilização Média dos Servidores')
+        plt.xlabel('Servidor')
+        plt.ylabel('Utilização (%)')
+        plt.ylim(0, 100)  # Supondo que a utilização não ultrapasse 100%
+        for index, (nome, utilizacao) in enumerate(utilizacoes.items()):
+            plt.text(index, utilizacao + 1, f'{utilizacao:.2f}%', ha='center', va='bottom')
+        plt.grid(axis='y')
+
+        plt.tight_layout()
+        plt.show()
